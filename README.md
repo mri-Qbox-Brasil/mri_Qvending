@@ -1,4 +1,4 @@
-# rib-vending
+# Credits rib-vending
 Ribeiro Vending Machine
 
 [**PREVIEW**](https://vimeo.com/1000589475?share=copy)

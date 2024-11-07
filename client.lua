@@ -1,13 +1,11 @@
 local emotePlaying = false
 
--- Debug print function
 local function debugPrint(message)
     if Config.Debug then
         print("[DEBUG] " .. message)
     end
 end
 
--- Utility function to play emote and open inventory
 function playEmoteAndOpenInventory(emote, shopType, cancelEmote)
     emotePlaying = true
     exports.scully_emotemenu:playEmoteByCommand(emote, 0)
@@ -21,23 +19,13 @@ function playEmoteAndOpenInventory(emote, shopType, cancelEmote)
     end)
 end
 
--- Function to handle soda machine interact
-function handleVendingMachineSoda()
+function handleVendingMachine(machineType, emote, debugMessage)
     if not emotePlaying then
-        playEmoteAndOpenInventory('dispenser', Config.VendingMachines.Drinks.ShopType)
-        debugPrint("Interacted with soda machine.")
+        playEmoteAndOpenInventory(emote, Config.VendingMachines[machineType].ShopType)
+        debugPrint(debugMessage)
     end
 end
 
--- Function to handle donut machine interact
-function handleVendingMachineDonuts()
-    if not emotePlaying then
-        playEmoteAndOpenInventory('think3', Config.VendingMachines.Donuts.ShopType, true)
-        debugPrint("Interacted with donut machine.")
-    end
-end
-
--- Function to add vending machine interact
 local function addVendingMachineInteraction(machineType)
     local machineConfig = Config.VendingMachines[machineType]
 
@@ -45,7 +33,8 @@ local function addVendingMachineInteraction(machineType)
         debugPrint("Setting up interactions for: " .. machineType)
         for _, model in ipairs(machineConfig.Models) do
             local id = machineConfig.InteractionIDPrefix .. model
-            local actionFunc = _G[machineConfig.ActionFunction]
+            local actionFunc = machineConfig.ActionFunction
+            print(actionFunc[1], actionFunc[2])
 
             if Config.InteractOption == "ox" then
                 exports.ox_target:addModel(model, {
@@ -53,7 +42,7 @@ local function addVendingMachineInteraction(machineType)
                         name = id,
                         label = machineConfig.InteractionText,
                         icon = machineConfig.Icon,
-                        onSelect = actionFunc,
+                        onSelect = function() handleVendingMachine(actionFunc[1], actionFunc[2], "Using ox_target for model: " .. model) end,
                     }
                 })
                 debugPrint("Using ox_target for model: " .. model)
@@ -68,7 +57,7 @@ local function addVendingMachineInteraction(machineType)
                     options = {
                         {
                             label = machineConfig.InteractionText,
-                            action = actionFunc,
+                            action = function () handleVendingMachine(actionFunc[1], actionFunc[2], "Using interact for model: " .. model) end,
                         }
                     }
                 })
@@ -82,6 +71,18 @@ local function addVendingMachineInteraction(machineType)
     end
 end
 
--- Adding interactions for all vending machines
-addVendingMachineInteraction('Drinks')
-addVendingMachineInteraction('Donuts')
+local function startVendingMachines()
+    for machineType, _ in pairs(Config.VendingMachines) do
+        addVendingMachineInteraction(machineType)
+    end
+end
+
+AddEventHandler('onResourceStart', function(resource)
+    if resource == GetCurrentResourceName() then
+        startVendingMachines()
+    end
+end)
+
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
+    startVendingMachines()
+end)

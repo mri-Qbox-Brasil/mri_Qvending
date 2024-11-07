@@ -1,10 +1,11 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'Vending Machine'
+description 'Vending Machine Creator'
 version '1.0.0'
 
-author 'ribeiro.gg'
+author 'mur4i'
+credits 'ribeiro.gg'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -15,11 +16,12 @@ client_scripts {
     'client.lua'
 }
 
+server_scripts {
+    'server.lua'
+}
+
 dependencies {
-    'ox_inventory', 
-    -- 'ox_target',
-    'scully_emotemenu',
-    'interact',
+    'ox_inventory',
 }
 
 lua54 'yes'
